@@ -1,0 +1,54 @@
+# Lista de Endpoints - Tienda Virtual (Backend)
+
+Base URL: http://localhost:8080 (o http://localhost:8081 si cambiaste el puerto en docker-compose)
+
+## Autenticación (Auth)
+
+1. Registro de Usuario
+   - Método: POST
+   - URL: /api/auth/register?name={nombre}
+   - Body (JSON):
+     {
+       "email": "usuario@ejemplo.com",
+       "password": "tu_password_segura"
+     }
+
+2. Inicio de Sesión (Login)
+   - Método: POST
+   - URL: /api/auth/login
+   - Body (JSON):
+     {
+       "email": "usuario@ejemplo.com",
+       "password": "tu_password_segura"
+     }
+   - Nota: Devuelve un token JWT que debes usar en la cabecera 'Authorization: Bearer <token>' para peticiones protegidas.
+
+## Catálogo de Productos
+
+3. Listar todos los productos
+   - Método: GET
+   - URL: /api/products
+   - Acceso: Público
+
+4. Ver detalle de un producto
+   - Método: GET
+   - URL: /api/products/{id}
+   - Acceso: Público
+
+5. Crear producto (Admin)
+   - Método: POST
+   - URL: /api/products/admin
+   - Body (JSON Ejemplo):
+     {
+       "name": "Nombre Producto",
+       "description": "Descripción",
+       "price": 99.99,
+       "stock": 100,
+       "imageUrl": "http://imagen.com"
+     }
+   - Acceso: Solo ADMIN (Requiere Token JWT en cabecera)
+
+## Documentación Interactiva (Swagger)
+
+- URL: /swagger-ui.html
+- URL API Docs: /api-docs
