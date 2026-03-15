@@ -9,8 +9,8 @@ import tienda.virtual.interfaces.dto.ProductDTO;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-14T16:09:52-0500",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.9 (Oracle Corporation)"
+    date = "2026-03-14T19:35:23-0500",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 1.4.200.v20221012-0724, environment: Java 17.0.4.1 (Eclipse Adoptium)"
 )
 @Component
 public class ProductMapperImpl implements ProductMapper {
@@ -23,12 +23,12 @@ public class ProductMapperImpl implements ProductMapper {
 
         ProductDTO.ProductDTOBuilder productDTO = ProductDTO.builder();
 
-        productDTO.id( product.getId() );
-        productDTO.name( product.getName() );
         productDTO.description( product.getDescription() );
+        productDTO.id( product.getId() );
+        productDTO.imageUrl( product.getImageUrl() );
+        productDTO.name( product.getName() );
         productDTO.price( product.getPrice() );
         productDTO.stock( product.getStock() );
-        productDTO.imageUrl( product.getImageUrl() );
 
         return productDTO.build();
     }
@@ -41,12 +41,12 @@ public class ProductMapperImpl implements ProductMapper {
 
         Product.ProductBuilder product = Product.builder();
 
-        product.id( productDTO.getId() );
-        product.name( productDTO.getName() );
         product.description( productDTO.getDescription() );
+        product.id( productDTO.getId() );
+        product.imageUrl( productDTO.getImageUrl() );
+        product.name( productDTO.getName() );
         product.price( productDTO.getPrice() );
         product.stock( productDTO.getStock() );
-        product.imageUrl( productDTO.getImageUrl() );
 
         return product.build();
     }

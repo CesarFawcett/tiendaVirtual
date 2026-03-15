@@ -3,11 +3,38 @@ import ProductForm from '@/components/admin/ProductForm';
 import PromotionEditor from '@/components/admin/PromotionEditor';
 import { useAuth } from '@/context/AuthContext';
 import Head from 'next/head';
+import api from '@/utils/api/client';
+import { useEffect } from 'react';
 import { LayoutDashboard, ShoppingBag, Percent, Megaphone, Settings } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { isAdmin, loading, isMounted } = useAuth();
+  const [products, setProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('products');
+
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get('/products');
+      setProducts(response.data);
+    } catch (err) {
+      console.error('Error fetching admin products:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) fetchProducts();
+  }, [isAdmin]);
+
+  const handleCreateProduct = async (data) => {
+    try {
+      await api.post('/products/admin', data);
+      alert('Producto creado con éxito');
+      fetchProducts();
+    } catch (err) {
+      console.error('Error creating product:', err);
+      alert('Error al crear el producto');
+    }
+  };
 
   if (!isMounted || loading) return <div className="p-20 text-center">Cargando...</div>;
   if (!isAdmin) return <div className="p-20 text-center text-red-500 font-bold">Acceso Denegado</div>;
@@ -67,7 +94,7 @@ export default function AdminDashboard() {
 
           {activeTab === 'products' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <ProductForm onSubmit={(data) => console.log('New Product:', data)} />
+              <ProductForm onSubmit={handleCreateProduct} />
               
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                 <table className="w-full text-left">
@@ -80,19 +107,36 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    <tr className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden">
-                          <img src="https://via.placeholder.com/40" alt="p" className="w-full h-full object-cover" />
-                        </div>
-                        <span className="font-semibold text-gray-700">Smartphone Pro</span>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-indigo-600 text-sm">$999.00</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">15 u.</td>
-                      <td className="px-6 py-4">
-                        <button className="text-xs font-bold text-indigo-600 hover:underline">Editar</button>
-                      </td>
-                    </tr>
+                    {products.map(product => (
+                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden">
+                            <img src={product.imageUrl || "https://via.placeholder.com/40"} alt={product.name} className="w-full h-full object-cover" />
+                          </div>
+                          <span className="font-semibold text-gray-700">{product.name}</span>
+                        </td>
+                        <td className="px-6 py-4 font-bold text-indigo-600 text-sm">${product.price}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{product.stock} u.</td>
+                        <td className="px-6 py-4">
+                          <button 
+                            className="text-xs font-bold text-red-500 hover:underline"
+                            onClick={async () => {
+                              if(confirm('¿Eliminar producto?')) {
+                                await api.delete(`/products/${product.id}`);
+                                fetchProducts();
+                              }
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {products.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-10 text-center text-gray-400 italic">No hay productos registrados</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

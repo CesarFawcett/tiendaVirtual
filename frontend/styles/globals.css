@@ -6,6 +6,8 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+/* Desactivamos el modo oscuro automático para mantener la consistencia del diseño premium */
+/* 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -13,6 +15,7 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+*/
 
 body {
   color: rgb(var(--foreground-rgb));
@@ -22,4 +25,13 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+/* Force inputs and textareas to have black text on light backgrounds */
+input, textarea, select {
+  color: #000000 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280;
 }

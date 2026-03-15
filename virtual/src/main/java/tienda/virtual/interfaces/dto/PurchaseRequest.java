@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDTO {
-    private Long id;
-    private String email;
-    private String name;
-    private String role;
-    private java.math.BigDecimal balance;
+public class PurchaseRequest {
+    private Long productId;
+    private Integer quantity;
 }

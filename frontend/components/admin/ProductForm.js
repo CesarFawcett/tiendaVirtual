@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import { Upload, X, Package, DollarSign, AlignLeft, Tag } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Upload, X, Package, DollarSign, AlignLeft, Tag, Loader2 } from 'lucide-react';
+import api from '@/utils/api/client';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8080';
 
 export default function ProductForm({ onSubmit, initialData = {} }) {
   const [formData, setFormData] = useState({
@@ -8,24 +11,54 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
     price: initialData.price || '',
     stock: initialData.stock || '',
     category: initialData.category || '',
-    image: null,
-    imagePreview: initialData.image || null,
+    imageUrl: initialData.imageUrl || '',
   });
+  const [imagePreview, setImagePreview] = useState(initialData.imageUrl || null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setFormData({
-        ...formData,
-        image: file,
-        imagePreview: URL.createObjectURL(file)
+    if (!file) return;
+
+    // Mostrar preview local inmediatamente
+    const localPreview = URL.createObjectURL(file);
+    setImagePreview(localPreview);
+
+    // Subir la imagen al servidor
+    setUploading(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      const response = await api.post('/upload/image', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
+      const imageUrl = response.data.imageUrl;
+      setFormData(prev => ({ ...prev, imageUrl }));
+      setImagePreview(`${API_BASE}${imageUrl}`);
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      alert('Error al subir la imagen. Intenta de nuevo.');
+      setImagePreview(null);
+    } finally {
+      setUploading(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, imageUrl: '' }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
+    if (!initialData.id) {
+      setFormData({ name: '', description: '', price: '', stock: '', category: '', imageUrl: '' });
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -34,13 +67,21 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
         {/* Columna Izquierda: Imagen */}
         <div className="space-y-4">
           <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Imagen del Producto</label>
-          <div className="relative group aspect-square rounded-2xl border-2 border-dashed border-gray-200 hover:border-indigo-400 transition-colors overflow-hidden flex flex-col items-center justify-center bg-gray-50">
-            {formData.imagePreview ? (
+          <div
+            className="relative group aspect-square rounded-2xl border-2 border-dashed border-gray-200 hover:border-indigo-400 transition-colors overflow-hidden flex flex-col items-center justify-center bg-gray-50 cursor-pointer"
+            onClick={() => !uploading && fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <div className="flex flex-col items-center gap-2 text-indigo-600">
+                <Loader2 className="w-10 h-10 animate-spin" />
+                <p className="text-sm font-medium">Subiendo imagen...</p>
+              </div>
+            ) : imagePreview ? (
               <>
-                <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                <button 
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
                   type="button"
-                  onClick={() => setFormData({...formData, image: null, imagePreview: null})}
+                  onClick={(e) => { e.stopPropagation(); handleRemoveImage(); }}
                   className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
                 >
                   <X className="w-4 h-4" />
@@ -49,17 +90,18 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
             ) : (
               <div className="text-center p-6">
                 <Upload className="mx-auto h-12 w-12 text-gray-300 mb-2" />
-                <p className="text-sm text-gray-500">Haz clic para subir o arrastra una imagen</p>
-                <p className="text-xs text-gray-400 mt-1">PNG, JPG hasta 10MB</p>
+                <p className="text-sm font-medium text-gray-500">Haz clic para subir una imagen</p>
+                <p className="text-xs text-gray-400 mt-1">PNG, JPG o WEBP hasta 10MB</p>
               </div>
             )}
-            <input 
-              type="file" 
-              className="absolute inset-0 opacity-0 cursor-pointer" 
-              onChange={handleImageChange}
-              accept="image/*"
-            />
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleImageChange}
+            accept="image/png,image/jpeg,image/webp"
+          />
         </div>
 
         {/* Columna Derecha: Datos */}
@@ -68,9 +110,9 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
             <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Nombre del Producto</label>
             <div className="relative">
               <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input 
-                type="text" 
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500"
+              <input
+                type="text"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-black outline-none"
                 placeholder="Ej: Auriculares Bluetooth"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -84,9 +126,9 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
               <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Precio ($)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input 
-                  type="number" 
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500"
+                <input
+                  type="number"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-black outline-none"
                   placeholder="0.00"
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
@@ -98,9 +140,9 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
               <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Stock</label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input 
-                  type="number" 
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500"
+                <input
+                  type="number"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-black outline-none"
                   placeholder="Items"
                   value={formData.stock}
                   onChange={(e) => setFormData({...formData, stock: e.target.value})}
@@ -114,9 +156,9 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
             <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Descripción</label>
             <div className="relative">
               <AlignLeft className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-              <textarea 
+              <textarea
                 rows="4"
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-black outline-none"
                 placeholder="Describe los beneficios del producto..."
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -128,11 +170,12 @@ export default function ProductForm({ onSubmit, initialData = {} }) {
       </div>
 
       <div className="pt-4 flex justify-end">
-        <button 
+        <button
           type="submit"
-          className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
+          disabled={uploading}
+          className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-60"
         >
-          Guardar Producto
+          {uploading ? 'Subiendo imagen...' : 'Guardar Producto'}
         </button>
       </div>
     </form>

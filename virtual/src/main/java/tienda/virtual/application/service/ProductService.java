@@ -16,7 +16,11 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     public List<ProductDTO> getAllProducts() {
-        return productMapper.toDtoList(productRepository.findAll());
+        List<Product> products = productRepository.findAll();
+        if (products == null || products.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return productMapper.toDtoList(products);
     }
 
     public ProductDTO getProductById(Long id) {

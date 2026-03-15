@@ -8,16 +8,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-  if (userStr) {
-    try {
-      const { token } = JSON.parse(userStr);
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (e) {
-      console.error("Auth token parse error", e);
-    }
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });

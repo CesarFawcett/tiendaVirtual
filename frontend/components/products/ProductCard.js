@@ -1,7 +1,18 @@
-import { Trash2, Plus, Minus } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8080';
+
+const getImageSrc = (url) => {
+  if (!url) return 'https://via.placeholder.com/400?text=Sin+imagen';
+  if (url.startsWith('http')) return url;
+  return `${API_BASE}${url}`;
+};
 
 export default function ProductCard({ product }) {
-  const { id, name, price, discount, image, stock } = product;
+  const { id, name, price, imageUrl, stock } = product;
+  const { addToCart } = useCart();
+  const discount = product.discount || 0; 
   const discountedPrice = price - (price * (discount / 100));
 
   return (
@@ -14,11 +25,11 @@ export default function ProductCard({ product }) {
       )}
       
       {/* Imagen */}
-      <div className="aspect-square overflow-hidden bg-gray-100 relative">
+      <div className="aspect-square overflow-hidden bg-gray-50 relative flex items-center justify-center">
         <img 
-          src={image || 'https://via.placeholder.com/400'} 
+          src={getImageSrc(imageUrl)}
           alt={name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 p-2"
         />
         <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
       </div>
@@ -45,8 +56,11 @@ export default function ProductCard({ product }) {
           </span>
         </div>
 
-        <button className="mt-5 w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold shadow-md shadow-indigo-200 hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-          <Plus className="w-4 h-4" />
+        <button 
+          onClick={() => addToCart(product)}
+          className="mt-5 w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold shadow-md shadow-indigo-200 hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+        >
+          <ShoppingCart className="w-4 h-4" />
           Agregar al carrito
         </button>
       </div>

@@ -24,4 +24,14 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
+
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<tienda.virtual.interfaces.dto.UserDTO>> getUsers() {
+        return ResponseEntity.ok(authService.getAllUsers());
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<tienda.virtual.interfaces.dto.UserDTO> getProfile(java.security.Principal principal) {
+        return ResponseEntity.ok(authService.getProfile(principal.getName()));
+    }
 }

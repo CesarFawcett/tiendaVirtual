@@ -20,25 +20,39 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const login = (authData) => {
+    // authData should have { token, user: { name, email, role, etc } }
+    setUser(authData.user);
+    localStorage.setItem('user', JSON.stringify(authData.user));
+    localStorage.setItem('token', authData.token);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  };
+
+  const refreshUser = async () => {
+    try {
+      const response = await import('@/utils/api/client').then(m => m.default.get('/auth/profile'));
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+    } catch (error) {
+      console.error('Error refreshing user profile:', error);
+    }
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
       isLoggedIn: !!user, 
-      isAdmin: user?.role === 'admin', 
+      isAdmin: user?.role === 'ROLE_ADMIN' || user?.role === 'admin', 
       loading,
       isMounted,
       login, 
-      logout 
+      logout,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

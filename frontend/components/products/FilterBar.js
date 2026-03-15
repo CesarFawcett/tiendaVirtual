@@ -8,7 +8,7 @@ export default function FilterBar({ filters, setFilters }) {
         <input 
           type="text"
           placeholder="Buscar productos..."
-          className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+          className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all text-sm text-black"
           value={filters.search}
           onChange={(e) => setFilters({...filters, search: e.target.value})}
         />

@@ -26,4 +26,9 @@ public class UserRepositoryAdapter implements UserRepository {
     public Optional<User> findById(Long id) {
         return jpaUserRepository.findById(id);
     }
+
+    @Override
+    public java.util.List<User> findAll() {
+        return jpaUserRepository.findAll();
+    }
 }

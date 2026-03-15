@@ -29,6 +29,9 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(AuthRequest request, String name, Role role) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("El usuario ya existe con ese email");
+        }
         var user = User.builder()
                 .name(name)
                 .email(request.getEmail())
@@ -62,5 +65,17 @@ public class AuthService {
                 .token(jwtToken)
                 .user(userMapper.toDto(user))
                 .build();
+    }
+
+    public tienda.virtual.interfaces.dto.UserDTO getProfile(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return userMapper.toDto(user);
+    }
+
+    public java.util.List<tienda.virtual.interfaces.dto.UserDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toDto)
+                .collect(java.util.stream.Collectors.toList());
     }
 }
