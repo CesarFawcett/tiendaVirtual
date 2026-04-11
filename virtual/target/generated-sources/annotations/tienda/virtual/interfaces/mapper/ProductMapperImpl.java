@@ -9,8 +9,8 @@ import tienda.virtual.interfaces.dto.ProductDTO;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-14T19:35:23-0500",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 1.4.200.v20221012-0724, environment: Java 17.0.4.1 (Eclipse Adoptium)"
+    date = "2026-04-10T13:41:53-0500",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.45.0.v20260224-0835, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
 public class ProductMapperImpl implements ProductMapper {
